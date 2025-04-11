@@ -9,7 +9,6 @@ function Square({number, value, onSquareClick}) {
     )
 }
 
-
 function Board({xIsNext, squares, boardSize, onPlay}) {
 
     // check if next move can happen:
@@ -40,16 +39,14 @@ function Board({xIsNext, squares, boardSize, onPlay}) {
 
     return (
         <>
-            {boardRows.map(row => 
+            { boardRows.map(row => 
                     <div key={row} className="board-row">
-                        {   
-                            boardColumns.map(col => 
-                                {
-                                    const pos = row * boardSize.columns + col
-                                    return <Square key={col} number={pos} value={squares[pos]} onSquareClick={() => handleClick(pos)}/>
-                                }
-                            )
-                        }
+                        { boardColumns.map(col => 
+                            {
+                                const pos = row * boardSize.columns + col
+                                return <Square key={col} number={pos} value={squares[pos]} onSquareClick={() => handleClick(pos)}/>
+                            }
+                        )}
                     </div>
                 )
             }
@@ -138,15 +135,11 @@ function calculateWinner(squares, boardSize) {
         }
     }
 
-    winningDiagonals = winningDiagonals.filter(arr => arr.length > 2);
-    console.log(winningDiagonals, "winning diagonals");
-    // console.log(winningDiagonals, 'diagonals');
+    const minimumSize = Math.min(boardSize.columns, boardSize.rows);
+    const filterOut = minimumSize > 3 ? 1 : 2;
+    winningDiagonals = winningDiagonals.filter(arr => arr.length > filterOut);
     
     winningLines = [...winningLines, ...winningDiagonals];
-    
-    console.log(winningLines, "linves")
-
-
     
     for (let i = 0; i < winningLines.length; i++) {
         let checkSquares = winningLines[i].map(l => squares[l])
@@ -155,7 +148,6 @@ function calculateWinner(squares, boardSize) {
             return checkSquares[0];
         }
     }
-    console.log(squares, "squares");
     return calculateDraw(squares) ? 'neither' : null;
 }
 
@@ -164,7 +156,7 @@ function calculateDraw(squares) {
 }
 
 function getRandomSize() {
-    return Math.floor(Math.random() * (2)) + 3;
+    return Math.floor(Math.random() * (4)) + 3;
   }
 
 export default function Game() {
@@ -204,7 +196,7 @@ const moves = history.map((squares, move) => {
         </li>
     )
 })
-    
+
     return (
         <div className="game">
             <div className="game-board">
