@@ -10,7 +10,7 @@ type SquareProps = {
 function Square({number, value, onSquareClick}: SquareProps) {
 
     return (
-        <button className={value ? "square" : "square-number"} onClick={onSquareClick}>
+        <button className={value ? "square bg-white text-gray-700" : "square-number bg-white hover:bg-gray-200 text-gray-100"} onClick={onSquareClick}>
             {value ? value : number}
         </button>
     )

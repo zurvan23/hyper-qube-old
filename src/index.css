@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 * {
   box-sizing: border-box;
 }
@@ -57,7 +59,7 @@ body {
 }
 
 .square {
-  background: #fff;
+  /* background: #fff; */
   border: 1px solid #999;
   float:left;
   font-size: 48px;
@@ -72,7 +74,7 @@ body {
 }
 
 .square-number {
-  background: #fff;
+  /* background: #fff; */
   border: 1px solid #999;
   float:left;
   font-size: 48px;
