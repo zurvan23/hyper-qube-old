@@ -69,7 +69,7 @@ function Board({xIsNext, squares, boardSize, onPlay}: BoardProps) {
                     </div>
                 )
             }
-            <div className="status">{status}</div>
+            <div className="status border-1 border-gray-400 bg-gray-200 w-40 text-center p-2 m-0.5 rounded-sm">{status}</div>
         </>
     );
 }
@@ -209,8 +209,8 @@ export default function Game() {
         return (
             <li key={move}>
                 {move === currentMove ? 
-                <p>You are at move {currentMove}</p> :
-                <button onClick={() => jumpTo(move)}>{description}</button>
+                <button className="border-1 border-gray-400 bg-gray-200 w-40 text-center px-2 m-0.5 rounded-sm" >You are at move {currentMove}</button> :
+                <button className="border-1 border-gray-400  px-2 m-0.5 w-40 text-center rounded-sm hover:bg-gray-100" onClick={() => jumpTo(move)}>{description}</button>
                 }
             </li>
         )
