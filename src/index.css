@@ -71,6 +71,22 @@ body {
   width: 68px;
 }
 
+.square-number {
+  background: #fff;
+  border: 1px solid #999;
+  float:left;
+  font-size: 48px;
+  font-weight: regular;
+  line-height: 68px;
+  height: 68px;
+  margin-right: -1px;
+  margin-top: -1px;
+  padding: 0;
+  text-align: center;
+  width: 68px;
+  color:lightgray;
+}
+
 .board-row:after {
   clear: both;
   content: '';
