@@ -1,49 +1,43 @@
 import {useState} from 'react';
 
 type SquareProps = {
-    number: number;
+    elementNumber: number;
     value: string | null;
     onSquareClick: () => void;
 }
 
-
-function Square({number, value, onSquareClick}: SquareProps) {
+function Square({elementNumber, value, onSquareClick}: SquareProps): React.ReactElement {
 
     return (
-        <button className={value ? "square bg-white text-gray-700" : "square-number bg-white hover:bg-gray-200 text-gray-100"} onClick={onSquareClick}>
-            {value ? value : number}
+        <button className=
+            {
+                value ? "square bg-white text-gray-700" :
+                "square-number bg-white hover:bg-gray-200 text-gray-100"
+            }
+            onClick={onSquareClick}>
+            { value ? value : elementNumber }
         </button>
     )
 }
 
-type BoardSize = {
+type BoardGrid = {
     rows: number;
     columns: number;
 }
 
 type BoardProps = {
-    xIsNext: boolean;
+    xIsNext: boolean; // @todo: turn into enum for multiple players with larger boards
     squares: (string | null)[];
-    boardSize: BoardSize;
+    boardGrid: BoardGrid;
     onPlay: (nextSquares: (string | null)[]) => void;
 }
 
-function Board({xIsNext, squares, boardSize, onPlay}: BoardProps) {
+function Board({xIsNext, squares, boardGrid, onPlay}: BoardProps): React.ReactElement {
 
-    // check if next move can happen:
-    function handleClick(i: number) {
-        if (squares[i] || calculateWinner(squares, boardSize)) {
-            return;
-        }
+    const boardRows = [...Array(boardGrid.rows).keys()];
+    const boardColumns = [...Array(boardGrid.columns).keys()];
 
-        const nextSquares = squares.slice();
-
-        nextSquares[i] = xIsNext ? 'X' : 'O';
-        
-        onPlay(nextSquares);
-    }
-
-    const winner = calculateWinner(squares, boardSize);
+    const winner = calculateWinner(squares, boardGrid);
 
     let status: string;
 
@@ -53,8 +47,18 @@ function Board({xIsNext, squares, boardSize, onPlay}: BoardProps) {
         status = `Next player: ${xIsNext ? 'X' : 'O'}`;
     }
 
-    const boardRows = [...Array(boardSize.rows).keys()];
-    const boardColumns = [...Array(boardSize.columns).keys()];
+    // check if next move can happen:
+    function handleClick(sqn: number): void {
+        if (squares[sqn] || calculateWinner(squares, boardGrid)) {
+            return;
+        }
+
+        const nextSquares = squares.slice();
+
+        nextSquares[sqn] = xIsNext ? 'X' : 'O';
+
+        onPlay(nextSquares);
+    }
 
     return (
         <>
@@ -62,8 +66,8 @@ function Board({xIsNext, squares, boardSize, onPlay}: BoardProps) {
                     <div key={row} className="board-row">
                         { boardColumns.map(col => 
                             {
-                                const pos = row * boardSize.columns + col
-                                return <Square key={col} number={pos} value={squares[pos]} onSquareClick={() => handleClick(pos)}/>
+                                const squareNumber = row * boardGrid.columns + col
+                                return <Square key={col} elementNumber={squareNumber} value={squares[squareNumber]} onSquareClick={() => handleClick(squareNumber)}/>
                             }
                         )}
                     </div>
@@ -74,91 +78,101 @@ function Board({xIsNext, squares, boardSize, onPlay}: BoardProps) {
     );
 }
 
-function calculateWinner(squares: (string|null)[], boardSize: BoardSize): string | null {
-
-    let winningLines: number[][] = [];
-
-    // winning rows
+function calculateWinningRows(boardGrid: BoardGrid): number[][] {
+    // determine winning rows
     let winningRows: number[][] = [];
-    for (let el:number = 0 ; el < boardSize.rows; el++) {
+    for (let el:number = 0 ; el < boardGrid.rows; el++) {
         winningRows[el] = []
-        for (let col = 0; col < boardSize.columns; col++) {
-            winningRows[el].push(el * boardSize.columns + col)
+        for (let col = 0; col < boardGrid.columns; col++) {
+            winningRows[el].push(el * boardGrid.columns + col)
         }
     }
-    winningLines = [...winningLines, ...winningRows];
+    return winningRows;
+}
 
+function calculateWinningColumns(boardGrid: BoardGrid): number[][] {
+
+    // determine winning columns
     let winningColumns: number[][] = [];
-    for (let el = 0; el < (boardSize.columns); el++) {
+    for (let el = 0; el < (boardGrid.columns); el++) {
         winningColumns[el] = []
-        for (let row = 0; row < boardSize.rows; row++) {
-            winningColumns[el].push(el + row * boardSize.columns)
+        for (let row = 0; row < boardGrid.rows; row++) {
+            winningColumns[el].push(el + row * boardGrid.columns)
         }
     }
-    winningLines = [...winningLines, ...winningColumns];
+    return winningColumns;
+}
 
+function calculateWinningDiagonals(boardGrid: BoardGrid, slope: number = 1, minimumLength: number = 3): number[][] {
     let winningDiagonals: number[][] = [];
-    let slope: number = 1;
 
-    for (let colStart: number = 0; colStart < boardSize.columns; colStart++) {
+    for (let colStart: number = 0; colStart < boardGrid.columns; colStart++) {
         let colPos: number = colStart;
         let rowPos:number = 0;
 
         winningDiagonals[colStart] = [];
-        while(colPos < boardSize.columns && rowPos < boardSize.rows) {
-            const squareNumber: number = (rowPos * (boardSize.columns + slope)) + colStart;
+        while(colPos < boardGrid.columns && rowPos < boardGrid.rows) {
+            let squareNumber: number = (rowPos * (boardGrid.columns + slope)) + colStart;
             winningDiagonals[colStart].push(squareNumber);
             rowPos++;
             colPos++;
         }
     }
 
-    for (let rowStart: number = 1; rowStart < boardSize.rows; rowStart++) {
+    for (let rowStart: number = 1; rowStart < boardGrid.rows; rowStart++) {
         let colPos: number = 0;
         let rowPos: number = rowStart;
 
-        winningDiagonals[boardSize.columns + rowStart] = [];
+        winningDiagonals[boardGrid.columns + rowStart] = [];
 
-        while(rowPos < boardSize.rows && colPos < boardSize.columns) {
-            const squareNumber: number = (rowPos * boardSize.columns) + (colPos * slope);
-            winningDiagonals[boardSize.columns + rowStart].push(squareNumber);
+        while(rowPos < boardGrid.rows && colPos < boardGrid.columns) {
+            const squareNumber: number = (rowPos * boardGrid.columns) + (colPos * slope);
+            winningDiagonals[boardGrid.columns + rowStart].push(squareNumber);
             rowPos++;
             colPos++;
         }
     }
 
-    for (let colStart: number = boardSize.columns-1; colStart >= 0; colStart--) {
+    for (let colStart: number = boardGrid.columns-1; colStart >= 0; colStart--) {
         let colPos: number = colStart;
         let rowPos: number = 0;
 
-        winningDiagonals[boardSize.columns + boardSize.rows -1 + colStart] = [];
-        while(colPos >= 0 && rowPos < boardSize.rows) {
-            const squareNumber: number = ((rowPos) * (boardSize.columns - slope)) + colStart;
-            winningDiagonals[boardSize.columns + boardSize.rows -1 + colStart].push(squareNumber);
+        winningDiagonals[boardGrid.columns + boardGrid.rows -1 + colStart] = [];
+        while(colPos >= 0 && rowPos < boardGrid.rows) {
+            const squareNumber: number = ((rowPos) * (boardGrid.columns - slope)) + colStart;
+            winningDiagonals[boardGrid.columns + boardGrid.rows -1 + colStart].push(squareNumber);
             rowPos++;
             colPos--;
         }
     }
 
-    for (let rowStart: number = 1; rowStart < boardSize.rows; rowStart++) {
-        let colPos: number = boardSize.columns-1;
+    for (let rowStart: number = 1; rowStart < boardGrid.rows; rowStart++) {
+        let colPos: number = boardGrid.columns-1;
         let rowPos: number = rowStart;
 
-        winningDiagonals[boardSize.columns + boardSize.rows + boardSize.columns + rowStart] = [];
+        winningDiagonals[boardGrid.columns + boardGrid.rows + boardGrid.columns + rowStart] = [];
 
-        while(rowPos < boardSize.rows && colPos >= 0) {
-            const squareNumber: number = (rowPos * boardSize.columns + (colPos * slope));
-            winningDiagonals[boardSize.columns + boardSize.rows + boardSize.columns + rowStart].push(squareNumber);
+        while(rowPos < boardGrid.rows && colPos >= 0) {
+            const squareNumber: number = (rowPos * boardGrid.columns + (colPos * slope));
+            winningDiagonals[boardGrid.columns + boardGrid.rows + boardGrid.columns + rowStart].push(squareNumber);
             rowPos++;
             colPos--;
         }
     }
 
-    const minimumSize: number = Math.min(boardSize.columns, boardSize.rows);
-    const filterOut: number = minimumSize > 3 ? 1 : 2;
-    winningDiagonals = winningDiagonals.filter(arr => arr.length > filterOut);
+    winningDiagonals = winningDiagonals.filter(arr => arr.length >= minimumLength);
+
+    return winningDiagonals;
+}
+
+
+function calculateWinner(squares: (string|null)[], boardGrid: BoardGrid): string | null {
+
+    let winningRows = calculateWinningRows(boardGrid);
+    let winningColumns = calculateWinningColumns(boardGrid);
+    let winningDiagonals = calculateWinningDiagonals(boardGrid, 1, 3);
     
-    winningLines = [...winningLines, ...winningDiagonals];
+    const winningLines: number[][] = [...winningRows, ...winningColumns, ...winningDiagonals];
     
     for (let i: number = 0; i < winningLines.length; i++) {
         let checkSquares = winningLines[i].map(l => squares[l])
@@ -178,24 +192,25 @@ function getRandomSize(): number {
     return Math.floor(Math.random() * (4)) + 3;
   }
 
-export default function Game() {
-    const [boardSize, _setBoardSize] = useState<(BoardSize)>({
-        rows: getRandomSize(),
-        columns: getRandomSize()
+export default function Game(): React.ReactElement {
+    const boardSize = getRandomSize();
+    const [boardGrid, _setBoardGrid] = useState<(BoardGrid)>({
+        rows: boardSize,
+        columns: boardSize
     })
  
-    const [history, setHistory] = useState<(string | null)[][]>([Array(boardSize.rows * boardSize.columns).fill(null)]);
+    const [history, setHistory] = useState<(string | null)[][]>([Array(boardGrid.rows * boardGrid.columns).fill(null)]);
     const [currentMove, setCurrentMove] = useState(0);
     const xIsNext = currentMove % 2 === 0;
     const currentSquares = history[currentMove];
 
-    function handlePlay(nextSquares: (string|null)[]) {
+    function handlePlay(nextSquares: (string|null)[]): void {
         const nextHistory = [...history.slice(0, currentMove + 1), nextSquares];
         setHistory(nextHistory);
         setCurrentMove(nextHistory.length - 1);
     }
 
-    function jumpTo(nextMove: number) {
+    function jumpTo(nextMove: number): void {
         setCurrentMove(nextMove);
     }
 
@@ -219,7 +234,7 @@ export default function Game() {
     return (
         <div className="game">
             <div className="game-board">
-                <Board xIsNext={xIsNext} squares={currentSquares} boardSize={boardSize} onPlay={handlePlay}/>
+                <Board xIsNext={xIsNext} squares={currentSquares} boardGrid={boardGrid} onPlay={handlePlay}/>
             </div>
             <div className="game-info">
                 <ol>{moves}</ol>
