@@ -11,8 +11,8 @@ function Square({elementNumber, value, onSquareClick}: SquareProps): React.React
     return (
         <button className=
             {
-                value ? "square bg-white text-gray-700" :
-                "square-number bg-white hover:bg-gray-200 text-gray-100"
+                value ? "square rounded-xl  m-2 font-bold text-gray-200/80 border-2 border-emerald-700/80 text-5xl size-20":
+                "square-number rounded-xl  bg-indigo-900/10 m-2 hover:bg-gray-900/20 hover:border-violet-300 text-gray-800 border-2  border-violet-600/80 text-5xl size-20"
             }
             onClick={onSquareClick}>
             { value ? value : elementNumber }
@@ -73,7 +73,7 @@ function Board({xIsNext, squares, boardGrid, onPlay}: BoardProps): React.ReactEl
                     </div>
                 )
             }
-            <div className="status border-1 border-gray-400 bg-gray-200 w-40 text-center p-2 m-0.5 rounded-sm">{status}</div>
+            <div className="absolute top-24 right-24 border-1 border-gray-400 bg-gray-900 text-gray-500 w-40 text-center px-2 m-0.5 font-mono">{status}</div>
         </>
     );
 }
@@ -81,12 +81,13 @@ function Board({xIsNext, squares, boardGrid, onPlay}: BoardProps): React.ReactEl
 function calculateWinningRows(boardGrid: BoardGrid): number[][] {
     // determine winning rows
     let winningRows: number[][] = [];
-    for (let el:number = 0 ; el < boardGrid.rows; el++) {
-        winningRows[el] = []
+    for (let row = 0; row < boardGrid.rows; row++) {
+        winningRows[row] = []
         for (let col = 0; col < boardGrid.columns; col++) {
-            winningRows[el].push(el * boardGrid.columns + col)
+            winningRows[row].push(row * boardGrid.columns + col)
         }
     }
+
     return winningRows;
 }
 
@@ -94,19 +95,20 @@ function calculateWinningColumns(boardGrid: BoardGrid): number[][] {
 
     // determine winning columns
     let winningColumns: number[][] = [];
-    for (let el = 0; el < (boardGrid.columns); el++) {
-        winningColumns[el] = []
+    for (let col = 0; col < boardGrid.columns; col++) {
+        winningColumns[col] = []
         for (let row = 0; row < boardGrid.rows; row++) {
-            winningColumns[el].push(el + row * boardGrid.columns)
+            winningColumns[col].push(row * boardGrid.columns + col)
         }
     }
+
     return winningColumns;
 }
 
 function calculateWinningDiagonals(boardGrid: BoardGrid, slope: number = 1, minimumLength: number = 3): number[][] {
     let winningDiagonals: number[][] = [];
 
-    for (let colStart: number = 0; colStart < boardGrid.columns; colStart++) {
+    for (let colStart = 0; colStart < boardGrid.columns; colStart++) {
         let colPos: number = colStart;
         let rowPos:number = 0;
 
@@ -119,7 +121,7 @@ function calculateWinningDiagonals(boardGrid: BoardGrid, slope: number = 1, mini
         }
     }
 
-    for (let rowStart: number = 1; rowStart < boardGrid.rows; rowStart++) {
+    for (let rowStart = 1; rowStart < boardGrid.rows; rowStart++) {
         let colPos: number = 0;
         let rowPos: number = rowStart;
 
@@ -133,7 +135,7 @@ function calculateWinningDiagonals(boardGrid: BoardGrid, slope: number = 1, mini
         }
     }
 
-    for (let colStart: number = boardGrid.columns-1; colStart >= 0; colStart--) {
+    for (let colStart = boardGrid.columns-1; colStart >= 0; colStart--) {
         let colPos: number = colStart;
         let rowPos: number = 0;
 
@@ -146,7 +148,7 @@ function calculateWinningDiagonals(boardGrid: BoardGrid, slope: number = 1, mini
         }
     }
 
-    for (let rowStart: number = 1; rowStart < boardGrid.rows; rowStart++) {
+    for (let rowStart = 1; rowStart < boardGrid.rows; rowStart++) {
         let colPos: number = boardGrid.columns-1;
         let rowPos: number = rowStart;
 
@@ -222,21 +224,21 @@ export default function Game(): React.ReactElement {
             description = 'Go to game start';
         }
         return (
-            <li key={move}>
+            <li key={move} className="mx-5">
                 {move === currentMove ? 
-                <button className="border-1 border-gray-400 bg-gray-200 w-40 text-center px-2 m-0.5 rounded-sm" >You are at move {currentMove}</button> :
-                <button className="border-1 border-gray-400  px-2 m-0.5 w-40 text-center rounded-sm hover:bg-gray-100" onClick={() => jumpTo(move)}>{description}</button>
+                <button className="border-1 border-gray-400 bg-gray-900 text-gray-500 w-40 text-left px-2 m-0.5 font-mono" >You are at move {currentMove}</button> :
+                <button className="border-1 border-gray-400  px-2 m-0.5 w-40 text-left bg-gray-900 text-gray-500 hover:bg-gray-700 font-mono" onClick={() => jumpTo(move)}>{description}</button>
                 }
             </li>
         )
     })
 
     return (
-        <div className="game">
-            <div className="game-board">
+        <div className="relative flex justify-center items-center h-screen">
+            <div className="game-board rounded-md font-mono">
                 <Board xIsNext={xIsNext} squares={currentSquares} boardGrid={boardGrid} onPlay={handlePlay}/>
             </div>
-            <div className="game-info">
+            <div className="absolute top-24 left-24 game-info">
                 <ol>{moves}</ol>
             </div>
         </div>
